@@ -4,13 +4,13 @@
 #include <WiFiManager.h>
 #define trigP 5 //D1
 #define echoP 4 //D2
-#define alturaMaxima 88.4
-//#define alturaMaxTinaco1 125 cm
-#define aguaMin 20
-#define aguaMax 10
+#define alturaMaxima 86
+//#define alturaMaxTambo 125 cm
+#define aguaMin 71 // distancia del agua minima al sensor
+#define aguaMax 10 // distancia del agua máxima al sensor
 const char * ssid="IZZI-C445";
 const char * password = "F82DC011C445";
-const char * mqttserver = "192.168.0.8";
+const char * mqttserver = "192.168.0.6";
 const int mqttPort = 1883;
 
 int nivelActual;
@@ -48,7 +48,7 @@ client.setServer(mqttserver,mqttPort);
 while (!client.connected() )
 {
   Serial.println("conectandose a servidor mosquitto");
-  if (client.connect("esp8266tinacoArriba"))
+  if (client.connect("esp8266tamboAbajo"))
   {
     Serial.println("Conectado ... :D....");
     Serial.println(WiFi.localIP());
@@ -96,13 +96,15 @@ client.publish("Nivel_agua/tambo",buffer);
 
 //Condiciones de operacion
 
-if (nivelActual>=hMax)
+if (nivelActual >= hMax)
 {
-  Serial.println("Apagar bomba");
+  Serial.println("::::::Encender bomba::::::");
+  client.publish("status/tambo","1");
 }
-else if (nivelActual<=hMin)
+else if (nivelActual <= hMin)
 {
-  Serial.println("Prender la bomba");
+  Serial.println("::::::Apagar bomba::::::");
+  client.publish("status/tambo","0");
 }
 
 delay(500);
