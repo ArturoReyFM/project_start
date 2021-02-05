@@ -12,6 +12,7 @@ const char * ssid="IZZI-C445";
 const char * password = "F82DC011C445";
 const char * mqttserver = "192.168.0.6";
 const int mqttPort = 1883;
+String espip="";
 
 int nivelActual;
 int hMax;
@@ -25,53 +26,84 @@ PubSubClient client(clienteTambo);
 
 
 void setup() {
-  // put your setup code here, to run once:
+    // put your setup code here, to run once:
 
-Serial.begin(9600);
-pinMode(trigP,OUTPUT);
-pinMode(echoP,INPUT);
-Serial.println("Pines listos para el TAMBO papss");
+  Serial.begin(9600);
+  pinMode(trigP,OUTPUT);
+  pinMode(echoP,INPUT);
+  Serial.println("Pines listos para el TAMBO papss");
 
-hMin = alturaMaxima - aguaMin;
-hMax = alturaMaxima - aguaMax;
+  hMin = alturaMaxima - aguaMin;
+  hMax = alturaMaxima - aguaMax;
 
-WiFi.begin(ssid,password);
+  WiFi.begin(ssid,password);
 
-while (WiFi.status() != WL_CONNECTED )
-{
-  delay(500);
-  Serial.println("Conectandose a WiFi... ...");
-
-}
-Serial.println("Conectado a al red Wifi... :D ....");
-client.setServer(mqttserver,mqttPort);
-while (!client.connected() )
-{
-  Serial.println("conectandose a servidor mosquitto");
-  if (client.connect("esp8266tamboAbajo"))
+  while (WiFi.status() != WL_CONNECTED )
   {
-    Serial.println("Conectado ... :D....");
-    Serial.println(WiFi.localIP());
+    delay(500);
+    Serial.println("Conectandose a WiFi... ...");
+
   }
-  else
+  Serial.println("Conectado a al red Wifi... :D ....");
+  client.setServer(mqttserver,mqttPort);
+  while (!client.connected() )
   {
-    Serial.print("Fallo conexión ");
-    Serial.print(client.state());
-    delay(2000);
-  }
+    Serial.println("conectandose a servidor mosquitto");
+    if (client.connect("esp8266tamboAbajo"))
+    {
+      Serial.println("Conectado ... :D....");
+      Serial.println(WiFi.localIP());
+      espip = WiFi.localIP().toString();
+      client.publish("ips/tambo",(char*)espip.c_str());
 
-client.publish("status","controlador_Tambo_de_abajo_Conectado");
+    }
+    else
+    {
+      Serial.print("Fallo conexión ");
+      Serial.print(client.state());
+      delay(2000);
+    }
 
+  client.publish("status","controlador_Tambo_de_abajo_Conectado");
   
-}
+    
+  }
 
+
+}
+void reconnect(){
+  while (!client.connected() )
+  {
+    Serial.println("conectandose a servidor mosquitto");
+    if (client.connect("esp8266tamboAbajo"))
+    {
+      Serial.print("Conectado ... :D....");
+      Serial.println(WiFi.localIP());
+      espip = WiFi.localIP().toString();
+      client.publish("ips/tambo",(char*)espip.c_str());
+      client.publish("status","controlador_Tambo_de_abajo_reconectado");
+    }
+    else
+    {
+      Serial.print("Fallo conexión ");
+      Serial.print(client.state());
+      delay(2000);
+    }
+  }
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+if (!client.connected()) {
+    reconnect();
+}
 //Para correr que el sistema siempre este conectado a Internet
 client.loop();
+
+espip = WiFi.localIP().toString();
+    
+client.publish("ips/tambo", (char*) espip.c_str());
 //Entorno de medida del sistema
 digitalWrite(trigP,LOW);
 delayMicroseconds(2);

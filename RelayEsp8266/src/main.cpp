@@ -11,6 +11,7 @@ const char* mqttServer = "192.168.0.6";
 //const char* mqttServer = "192.168.1.96";
 const int mqttPort = 1883;
 const char * espip = "";
+String relayip = "";
 #define RELAY 0 // relay connected to  GPIO0
 //const char* mqttUser = "otfxknod";
 //const char* mqttPassword = "nSuUc1dDLygF";
@@ -32,13 +33,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
    //Switch on the LED if an 1 was recieved as first character
     if((char)payload[0] == '1'){
       Serial.println("RELAY=ON");
-      client.publish("status","Bomba desactivada");
+      client.publish("status","Bomba Activada");
       digitalWrite(RELAY,LOW);
       value = LOW;
     }
     else if ((char)payload[0] == '0'){
       Serial.println("RELAY=OFF");
-      client.publish("status","Bomba activada");
+      client.publish("status","Bomba Desactivada");
       digitalWrite(RELAY,HIGH);
       value = HIGH;
     }
@@ -68,6 +69,8 @@ void setup() {
     if (client.connect("ESP8266Relay" )) {
  
       Serial.println("connected");
+      relayip = WiFi.localIP().toString();
+      client.publish("ips/bomba",(char*)relayip.c_str());
       Serial.println(WiFi.localIP());
       espip = WiFi.localIP().toString().c_str();
     } else {
@@ -79,15 +82,42 @@ void setup() {
     }
   }
   
-  client.publish("status", "Esp8266_controlador_de_bomba_conectado"); //Topic name
+  client.publish("status", "Controlador_de_bomba_conectado"); //Topic name
   client.publish("status", espip);
   client.subscribe("Bomba");
  
+}
+void reconnect(){
+  while (!client.connected()) {
+    Serial.println("Connecting to MQTT...");
+ 
+    if (client.connect("ESP8266Relay" )) {
+ 
+      Serial.println("connected");
+      Serial.println(WiFi.localIP());
+      espip = WiFi.localIP().toString().c_str();
+      client.publish("status", "Esp8266_controlador_de_bomba_reconectado"); //Topic name
+      client.publish("status", espip);
+      client.subscribe("Bomba");
+    } else {
+ 
+      Serial.print("failed with state ");
+      Serial.print(client.state());
+      delay(2000);
+ 
+    }
+  }
 }
  
 
  
 void loop() {
+  if (!client.connected()) {
+        reconnect();
+    }
   client.loop();
+  relayip = WiFi.localIP().toString();
+  client.publish("ips/bomba",(char*)relayip.c_str());
+   
  
 }
