@@ -4,14 +4,22 @@ import platform    # For getting the operating system name
 import subprocess  # For executing a shell command
 
 
-class status:
-    def __init__(self):
-        self.tinaco = False
-        self.tambo = False
-        self.ipTinaco = ""
-        self.ipTambo=""
 
-stats = status()
+alturaMaximaTambo = 86 # Altura máxima desde la base del tambo al sensor
+alturaMaximaTinaco = 84.5 # Altura màxima desde la base del tinaco al sensor
+
+# Distancias relativas desde  el sensor de tinaco y tambo al nivel de agua predeterminado 
+aguaMinTambo = 71
+aguaMaxTambo = 10
+aguaMinTinaco = 74.5
+aguaMaxTinaco = 20
+
+# Calcular niveles de agua relativas a la base de tinaco y tambo 
+nivelMaxTinaco = alturaMaximaTinaco - aguaMaxTinaco
+nivelMinTinaco = alturaMaximaTinaco -aguaMinTinaco
+nivelMaxTambo = alturaMaximaTambo - aguaMaxTambo
+nivelMinTambo = alturaMaximaTambo - aguaMinTambo
+
 
 def ping(host):
     """
@@ -26,40 +34,94 @@ def ping(host):
     command = ['ping', param, '1', host]
 
     return subprocess.call(command) == 0
+
 def on_message(client,userdata,message):
     msg = str(message.payload.decode("utf-8"))
     nivel = float(msg.split('.')[0])
     sensor = message.topic.split("/")[1]
-    if message.topic.split("/")[0]=="Nivel_agua":
+    topico = message.topic.split("/")[0]
+    if topico == "Nivel_agua":
         if nivel > -1000 and nivel <= 90 and sensor=="tinaco":
             print("[INFO] Sensor",sensor,"funcionando correctamente")
             stats.tinaco=True
+            stats.nivelTinaco = nivel
         if nivel > -1000 and nivel <= 90 and sensor=="tambo":
             print("[INFO] Sensor",sensor,"funcionando correctamente")
             stats.tambo=True
-    elif message.topic.split("/")[0]=="ips":
+            stats.nivelTambo = nivel
+    elif topico == "ips":
         if message.topic.split("/")[1]=="tinaco":
             stats.ipTinaco = msg
         else:
             stats.ipTambo = msg
         
+
+
+class status:
+    def __init__(self):
+        self.tinaco = False
+        self.tambo = False
+        self.ipTinaco = ""
+        self.ipTambo=""
+        self.nivelTinaco = 0
+        self.nivelTambo = 0
+        self.bombaActivada = False
+        self.tamboListo = False
+        self.clienteMqtt = None
+    
+    def set_mqtt_client(self):
+
+        self.clienteMqtt=mqtt.Client("centinela")
+        self.clienteMqtt.connect("localhost")
+        self.clienteMqtt.subscribe("Nivel_agua/tinaco")
+        self.clienteMqtt.subscribe("Nivel_agua/tambo")
+        self.clienteMqtt.subscribe("ips/tambo")
+        self.clienteMqtt.subscribe("ips/tinaco")
+        self.clienteMqtt.subscribe("status/tambo")
+        self.clienteMqtt.publish("status","Centinela activo")
+        self.clienteMqtt.on_message=on_message
+
+    def operacionTinaco(self,nivelMaxTinaco, nivelMinTinaco):
+        if self.nivelTinaco >= nivelMaxTinaco:
+            print("Apagar bomba")
+            self.clienteMqtt.publish("Bomba","0")
+            self.bombaActivada = False
+        elif self.nivelTinaco <= nivelMinTinaco and not self.bombaActivada and self.tamboListo:
+            print("Prender Bomba")
+            self.clienteMqtt.publish("Bomba","1")
+            self.bombaActivada = True
+        elif self.bombaActivada and not self.tamboListo:
+            print("Apagar bomba")
+            self.clienteMqtt("Bomba","0")
+            self.bombaActivada = True
+        elif self.tamboListo and nivelMinTinaco < self.nivelTinaco < nivelMaxTinaco:
+            print("Prender Bomba")
+            self.clienteMqtt("Bomba","1")
+            self.bombaActivada = True
+
+    def operacionTambo(self,nivelMaxTambo,nivelMinTambo):
+        if self.nivelTambo >= nivelMaxTambo:
+            print("Tambo listo para subir agua")
+            self.tamboListo = True
+        elif self.nivelTambo <= nivelMinTambo:
+            print("Tambo necesita agua")
+            self.tamboListo = False
+            
+
+stats = status()
+
 def main():
-    client=mqtt.Client("centinela")
-    client.connect("localhost")
-    client.subscribe("Nivel_agua/tinaco")
-    client.subscribe("Nivel_agua/tambo")
-    client.subscribe("ips/tambo")
-    client.subscribe("ips/tinaco")
-    client.publish("status","Centinela activo")
-    client.on_message=on_message
 
     while True:
-        client.loop_start()
+        stats.set_mqtt_client()
+        stats.clienteMqtt.loop_start()
+        stats.operacionTambo(nivelMaxTambo,nivelMinTambo)
+        stats.operacionTinaco(nivelMaxTinaco,nivelMinTinaco)
         if stats.tambo!=True or stats.tinaco!=True:
             print("[INFO] Se mantiene bomba apagada")
             print("[INFO] Tambo activado:",stats.tambo,"Tinaco activado:",stats.tinaco)
-            client.publish("status","[INFO] Tambo activado:{} Tinaco activado:{}".format(stats.tambo,stats.tinaco))
-            client.publish("Bomba","0")
+            stats.clienteMqtt.publish("status","[INFO] Tambo activado:{} Tinaco activado:{}".format(stats.tambo,stats.tinaco))
+            stats.bombaActivada = False
         stats.tinaco = ping(stats.ipTinaco)
         stats.tambo = ping(stats.ipTambo)
         tm.sleep(2)
