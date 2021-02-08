@@ -25,33 +25,7 @@ bool tamboReady = false;
 WiFiClient clienteTinaco;
 PubSubClient client(clienteTinaco); 
 
-String IpAddress2String(const IPAddress& ipAddress)
-{
-  return String(ipAddress[0]) + String(".") +\
-  String(ipAddress[1]) + String(".") +\
-  String(ipAddress[2]) + String(".") +\
-  String(ipAddress[3])  ; 
-}
 
-void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.println("Mensaje recibido::::::");
-  if((char)payload[0] == '1'){
-    Serial.println("Tambo listo para subir agua");
-    client.publish("status","Tambo listo para subir agua");
-    tamboReady = true;
-  }
-  else if ((char)payload[0] == '0')
-  {
-    Serial.println("Tambo necesita agua");
-    client.publish("status","Tambo necesita agua");
-    tamboReady = false;
-  }
-  
-  
-  Serial.println();
-  Serial.println("-----------------------");
- 
-} 
 
 void setup() {
     // put your setup code here, to run once:
@@ -60,9 +34,6 @@ void setup() {
   pinMode(trigP,OUTPUT);
   pinMode(echoP,INPUT);
   Serial.println("Pines listos papss");
-
-  hMin = alturaMaxima - aguaMin; // 10cm
-  hMax = alturaMaxima - aguaMax; // 80cm
 
   WiFi.begin(ssid,password);
 
@@ -75,7 +46,6 @@ void setup() {
   }
   Serial.println("Conectado a al red Wifi... :D ....");
   client.setServer(mqttserver,mqttPort);
-  client.setCallback(callback);
   while (!client.connected() )
   {
     Serial.println("conectandose a servidor mosquitto");
@@ -96,7 +66,7 @@ void setup() {
     }
   }
   client.publish("status","controlador_Tinco_de_arriba_Conectado");
-  client.subscribe("status/tambo");
+  
 }
 // Funcion de reconeccion
 void reconnect(){
@@ -112,7 +82,6 @@ void reconnect(){
       client.publish("status", "Esp8266_controlador_de_bomba_reconectado"); //Topic name
       client.publish("ips/tinaco", (char*) espip.c_str());
       client.publish("status","controlador_Tinco_de_arriba_Conectado");
-      client.subscribe("status/tambo");
     }
     else
     {
@@ -121,7 +90,6 @@ void reconnect(){
       delay(2000);
     }
   }
-  client.subscribe("status/tambo");
 }
 
 void loop() {
@@ -158,7 +126,7 @@ client.publish("Nivel_agua/tinaco",buffer);
 
 
 //Condiciones de operacion
-
+/*
 if (nivelActual>=hMax && bombaActivada)
 {
   Serial.println("Apagar bomba");
@@ -183,7 +151,7 @@ else if (tamboReady && nivelActual<hMax && nivelActual > hMin){
   bombaActivada = true;
   Serial.println("Prender la bomba");
 }
-
+*/
 delay(500);
 
 }

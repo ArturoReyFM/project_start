@@ -33,9 +33,6 @@ void setup() {
   pinMode(echoP,INPUT);
   Serial.println("Pines listos para el TAMBO papss");
 
-  hMin = alturaMaxima - aguaMin;
-  hMax = alturaMaxima - aguaMax;
-
   WiFi.begin(ssid,password);
 
   while (WiFi.status() != WL_CONNECTED )
@@ -55,7 +52,6 @@ void setup() {
       Serial.println(WiFi.localIP());
       espip = WiFi.localIP().toString();
       client.publish("ips/tambo",(char*)espip.c_str());
-
     }
     else
     {
@@ -127,7 +123,7 @@ client.publish("Nivel_agua/tambo",buffer);
 
 
 //Condiciones de operacion
-
+/*
 if (nivelActual >= hMax)
 {
   Serial.println("::::::Encender bomba::::::");
@@ -138,7 +134,7 @@ else if (nivelActual <= hMin)
   Serial.println("::::::Apagar bomba::::::");
   client.publish("status/tambo","0");
 }
-
+*/
 delay(500);
 
 }
