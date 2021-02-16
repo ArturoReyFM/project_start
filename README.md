@@ -13,10 +13,11 @@ mosquitto_sub -h localhost -t ips/tambo
 mosquitto_sub -h localhost -t ips/bomba
 ```
 
-### Cambiar a modo automatico o manual
+### Cambiar a modo automatico o manual o semiautomatico
 ```shell
 mosquitto_pub -h localhost -t "modo" -m "automatico"
 mosquitto_pub -h localhost -t "modo" -m "manual"
+mosquitto_pub -h localhost -t "modo" -m "semiautomatico"
 ```
 
 ### Prender y apagar bomba
@@ -29,6 +30,7 @@ mosquitto_pub -h localhost -t Bomba -m "0"
 ### Estado de todo el sistema
 ```shell
 mosquitto_sub -h localhost -t status
-```
+```ls
+
 
 
