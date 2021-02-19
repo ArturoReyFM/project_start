@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name = "Control de Bomba de agua"

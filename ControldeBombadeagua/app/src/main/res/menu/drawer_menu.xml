@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:showIn="navigation_view">
+        <group android:checkableBehavior="single">
+            <item android:id="@+id/nav_operation_mode"
+                android:icon="@drawable/ic_operation_mode"
+                android:title="Modo de operación"/>
+            <item android:id="@+id/nav_broker_config"
+                android:icon="@drawable/ic_broker_config"
+                android:title="Configuración"/>
+
+        </group>
+</menu>
