@@ -1,41 +1,42 @@
 <!DOCTYPE html>
-   <head>
-      <title>Control de bomba de agua</title>
-	  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript">
-	  </script>
-	  <script src="mqttOperaciones.js"></script>
-      
-   </head>
-     <body onload="desabilitarBotones()">
-   <h1>Panel del control de bomba de agua</h1>
- 	<script>
-	MQTTconnect();
-	</script>
-    <h2>Niveles de agua</h2>
-    <hr />
-    <p>Nivel del tambo(abajo): <span id="nivel_tambo"></span></p>
-    <p>Nivel del tinaco(arriba): <span id="nivel_tinaco"></span></p>
-    <span>
-        <h2>Modo de operacion</h2> 
-    </span>
-    <hr />
-    <label for="automatico">
-        <input type="radio" name="modo" id="automatico"onclick="modo_automatico()"/>
-        Automatico
-    </label>
-    <label for="semi">
-        <input type="radio" name="modo" id="semi" onclick="modo_semiautomatico()"/>
-        Semi-automatico
-    </label>
-    <label for="manual">
-        <input type="radio" name="modo" id="manual" onclick="modo_manual()"/>
-        Manual
-    </label>
-    <br />
-    <br />
-    <button id="encenderBomba" onclick="encenderBomba()">Encender Bomba</button>
-    <button id="apagarBomba" onclick="apagarBomba()">Apagar Bomba</button>
-    
-    
-   </body>	
+    <head>
+        <title>Control de bomba de agua</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+    <script src="mqttOperaciones.js"></script>      
+    </head>
+
+    <body onload="desabilitarBotones()">
+
+        <script>
+            MQTTconnect();
+        </script>
+        
+        <h1>Panel del control de bomba de agua</h1>
+        
+        <h2>Niveles de agua</h2>
+        <hr />
+        <p>Nivel del tambo(abajo): <span id="nivel_tambo"></span></p>
+        <p>Nivel del tinaco(arriba): <span id="nivel_tinaco"></span></p>
+        <span>
+            <h2>Modo de operacion</h2> 
+        </span>
+        <hr />
+        <label for="automatico">
+            <input type="radio" name="modo" id="automatico"onclick="modo_automatico()"/>
+            Automatico
+        </label>
+        <label for="semi">
+            <input type="radio" name="modo" id="semi" onclick="modo_semiautomatico()"/>
+            Semi-automatico
+        </label>
+        <label for="manual">
+            <input type="radio" name="modo" id="manual" onclick="modo_manual()"/>
+            Manual
+        </label>
+        <br />
+        <br />
+        <button id="encenderBomba" onclick="encenderBomba()">Encender Bomba</button>
+        <button id="apagarBomba" onclick="apagarBomba()">Apagar Bomba</button>
+
+    </body>	
 </html>
