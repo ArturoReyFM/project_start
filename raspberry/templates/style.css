@@ -1,0 +1,226 @@
+/* CSS reset: http://meyerweb.com/eric/tools/css/reset/ 
+    v2.0 | 20110126
+    License: none (public domain) */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+.invisible {
+    display: none;
+}
+
+body {
+    background: linear-gradient(to right bottom, #3A7BFC 0%, #4BF5AF 100%);
+    background-size: cover;
+    min-height: 100vh;
+    min-width: 100vw;
+    font-family: 'Montserrat', sans-serif;
+    color: rgba(23, 18, 112, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
+    .vidrio {
+        background: linear-gradient(154.42deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.42) 0.01%, rgba(255, 255, 255, 0.12) 100%);
+        mix-blend-mode: normal;
+        -webkit-backdrop-filter: blur(100px);
+        backdrop-filter: blur(100px);
+    }
+}
+
+main {
+    border-radius: 1.5rem;
+    width: 80%;
+    margin-top: clamp(1.5rem, 7vh, 3rem);
+    margin-bottom: clamp(1.5rem, 7vh, 3rem);
+}
+
+h1 {
+    margin: 0.8em auto;
+    font-size: 1.7rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+
+/* Niveles de agua */
+section,
+fieldset {
+    margin: 0.5em 1em;
+}
+
+h2,
+legend {
+    font-weight: 500;
+    margin-bottom: 0.3em;
+    font-size: 1.1rem;
+}
+
+section div {
+    background: linear-gradient(92.41deg, rgba(255, 255, 255, 0.85) 0%, #FFFFFF 100%);
+    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
+    border-radius: 1em;
+    margin: 0.5em 0;
+}
+
+p {
+    display: inline-block;
+    padding: 1em;
+}
+
+svg {
+    width: 2em;
+    float: right;
+    margin: 0.55em 1.5em;
+    fill: rgba(23, 18, 112, 0.8);
+}
+
+/* Modo */
+.flex1 {
+    display: flex;
+    height: 80%;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+fieldset:nth-of-type(1) input {
+    /* Style the radios */
+}
+
+/* Seleccionado */
+
+
+/* Botones */
+.flex2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+/* Habilitado */
+fieldset:nth-of-type(2) label {
+    background: linear-gradient(92.41deg, rgba(255, 255, 255, 0.51) 0%, rgba(255, 255, 255, 0.6) 100%);
+    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
+    border-radius: 1em;
+    width: 60%;
+    height: 3em;
+    text-align: center;
+    line-height: 3em;
+    font-weight: 500;
+    font-size: 1.2em;
+}
+
+/* Deshabilitado */
+#encenderBomba:disabled~label {
+    background: linear-gradient(92.41deg, rgba(181, 182, 183, 0.42) 0%, rgba(181, 182, 183, 0.6) 100%);
+    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
+    color: rgba(84, 79, 86, 0.8);
+    border: none;
+}
+
+/* Seleccionado */
+#encenderBomba:checked+label,
+#apagarBomba:checked+label {
+    background: radial-gradient(50% 1188.28% at 50% 50%, rgba(52, 255, 170, 0.6) 0%, rgba(10, 130, 112, 0.6) 100%);
+    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover */
+#encenderBomba:hover+label,
+#apagarBomba:hover+label {
+    transition: 40ms transform ease-in-out;
+    transform: scale(1.05);
+}
