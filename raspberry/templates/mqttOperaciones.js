@@ -92,6 +92,8 @@ function modo_semiautomatico() {
     if (modosemi.checked) {
         document.getElementById("encenderBomba").disabled = false;
         document.getElementById("apagarBomba").disabled = false;
+        document.getElementById("encenderBomba").checked = false;
+        document.getElementById("apagarBomba").checked = false;
         mqtt.send(message);
     }
 }
@@ -102,6 +104,8 @@ function modo_manual() {
     if (modomanual.checked) {
         document.getElementById("encenderBomba").disabled = false;
         document.getElementById("apagarBomba").disabled = false;
+        document.getElementById("encenderBomba").checked = false;
+        document.getElementById("apagarBomba").checked = false;
         mqtt.send(message);
     }
 }

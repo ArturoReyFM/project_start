@@ -176,17 +176,17 @@ svg {
 }
 
 fieldset:nth-of-type(1) input {
-    /* Style the radios */
+    /* Style the radios and the checked one*/
 }
 
 /* Seleccionado */
+/*:has is for CSS4 :( */
 
 
 /* Botones */
 .flex2 {
     display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
 }
 
@@ -194,33 +194,57 @@ fieldset:nth-of-type(1) input {
 fieldset:nth-of-type(2) label {
     background: linear-gradient(92.41deg, rgba(255, 255, 255, 0.51) 0%, rgba(255, 255, 255, 0.6) 100%);
     box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
-    border-radius: 1em;
-    width: 60%;
+    width: 30%;
     height: 3em;
     text-align: center;
     line-height: 3em;
     font-weight: 500;
-    font-size: 1.2em;
+    font-size: clamp(0.5em, 1.2em, 2em);
+}
+
+fieldset:nth-of-type(2) label {
+    background: linear-gradient(92.41deg, rgba(255, 255, 255, 0.6) 100%, rgba(255, 255, 255, 0.51) 0%);
+}
+
+label[for="encenderBomba"] {
+    border-radius: 1em 0 0 1em;
+}
+
+label[for="apagarBomba"] {
+    border-radius: 0 1em 1em 0;
 }
 
 /* Deshabilitado */
 #encenderBomba:disabled~label {
     background: linear-gradient(92.41deg, rgba(181, 182, 183, 0.42) 0%, rgba(181, 182, 183, 0.6) 100%);
+    box-shadow: 0px 7px 15px rgba(0, 0, 0, 0.15);
+    color: rgba(84, 79, 86, 0.8);
+    border: none;
+}
+
+#apagarBomba:disabled~label {
+    background: linear-gradient(92.41deg, rgba(181, 182, 183, 0.6) 100%, rgba(181, 182, 183, 0.42) 0%);
     box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
     color: rgba(84, 79, 86, 0.8);
     border: none;
 }
 
+/* Hover */
+#encenderBomba:enabled:hover+label,
+#apagarBomba:enabled:hover+label {
+    transition: 40ms transform ease-in-out;
+    transform: scale(1.05);
+}
+
 /* Seleccionado */
-#encenderBomba:checked+label,
-#apagarBomba:checked+label {
+/* Figure out a way to select previous siblings and use #apagarBomba:not(:checked) */
+/* Transitions require way more than expected. Check https://codepen.io/chriscoyier/pen/eRbLWP */
+#encenderBomba:checked+label {
     background: radial-gradient(50% 1188.28% at 50% 50%, rgba(52, 255, 170, 0.6) 0%, rgba(10, 130, 112, 0.6) 100%);
     box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
 }
 
-/* Hover */
-#encenderBomba:hover+label,
-#apagarBomba:hover+label {
-    transition: 40ms transform ease-in-out;
-    transform: scale(1.05);
+#apagarBomba:checked+label {
+    background: radial-gradient(50% 1188.28% at 50% 50%, rgba(254, 39, 55, 0.85) 0%, #A4161A 100%);
+    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
 }
