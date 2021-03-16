@@ -242,9 +242,12 @@ label[for="apagarBomba"] {
 #encenderBomba:checked+label {
     background: radial-gradient(50% 1188.28% at 50% 50%, rgba(52, 255, 170, 0.6) 0%, rgba(10, 130, 112, 0.6) 100%);
     box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
+    text-shadow: 0 0 15px #dcfaf2;
+
 }
 
 #apagarBomba:checked+label {
-    background: radial-gradient(50% 1188.28% at 50% 50%, rgba(254, 39, 55, 0.85) 0%, #A4161A 100%);
+    background: radial-gradient(50% 1188.28% at 50% 50%, rgba(255, 97, 97, 0.85) 0%, #A4161A 100%);
     box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
+    color: #470000;
 }
