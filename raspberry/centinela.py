@@ -3,7 +3,8 @@ import time as tm
 import platform    # For getting the operating system name
 import subprocess  # For executing a shell command
 from threading import Thread
-
+import logging
+import sys
 
 alturaMaximaTambo = 86 # Altura máxima desde la base del tambo al sensor
 alturaMaximaTinaco = 84.5 # Altura màxima desde la base del tinaco al sensor
@@ -27,22 +28,12 @@ def ping(host):
     Returns True if host (str) responds to a ping request.
     Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
     """
-
     # Option for the number of packets as a function of
     param = '-n' if platform.system().lower()=='windows' else '-c'
-
     # Building the command. Ex: "ping -c 1 google.com"
     command = ['ping', param, '1', host]
-   
-
     conectado = subprocess.call(command) == 0
-    print("\r")
-    print("\r")
-    print("\r")
-    print("\r")
-    print("\r")
-    print("\r")
-
+    
     return conectado
 
 def on_message(client,userdata,message):
@@ -86,13 +77,13 @@ def on_message(client,userdata,message):
             stats.bombaActivada = False
             stats.temporizador = tm.time() - stats.temporizador # calcular tiempo transcurrido de vaciado
             stats.deltaNivelTambo = abs(stats.nivelTambo - stats.deltaNivelTambo)
-            client.publish("status","[INFO] Se vaciaron {:.2} cm en{:.2f} seg".format(stats.deltaNivelTambo,stats.temporizador))
+            stats.publicar("[INFO] Se vaciaron {:.2} cm en{:.2f} seg".format(stats.deltaNivelTambo,stats.temporizador),"status")
             #client.publish("status","[INFO] Velocidad aproximada de la bomba {:.2}")
 
     
      
-class status:
-    def __init__(self):
+class ControladorBomba:
+    def __init__(self,logger):
         self.tinaco = False
         self.tambo = False
         self.ipTinaco = ""
@@ -105,45 +96,42 @@ class status:
         self.modo = "automatico" ## modo automatico
         self.temporizador = 0.0
         self.deltaNivelTambo = 0.0
+        self.notificacion_actual = ""
+        self.logger = logger
 
     
     def set_mqtt_client(self):
-
-        self.clienteMqtt=mqtt.Client("centinela")
-        self.clienteMqtt.connect("localhost")
-        self.clienteMqtt.subscribe("Nivel_agua/tinaco")
-        self.clienteMqtt.subscribe("Nivel_agua/tambo")
-        self.clienteMqtt.subscribe("ips/tambo")
-        self.clienteMqtt.subscribe("ips/tinaco")
-        self.clienteMqtt.subscribe("status/tambo")
-        self.clienteMqtt.subscribe("modo")
-        self.clienteMqtt.subscribe("Bomba")
-        self.clienteMqtt.publish("status","Centinela activo")
-        self.clienteMqtt.on_message=on_message
+        try:
+            self.clienteMqtt=mqtt.Client("centinela")
+            self.clienteMqtt.connect("localhost")
+            self.clienteMqtt.subscribe("Nivel_agua/tinaco")
+            self.clienteMqtt.subscribe("Nivel_agua/tambo")
+            self.clienteMqtt.subscribe("ips/tambo")
+            self.clienteMqtt.subscribe("ips/tinaco")
+            self.clienteMqtt.subscribe("status/tambo")
+            self.clienteMqtt.subscribe("modo")
+            self.clienteMqtt.subscribe("Bomba")
+            self.clienteMqtt.publish("status","Centinela activo")
+            self.clienteMqtt.on_message=on_message
+        except Exception as e:
+            logger.critical("Error al conectarse a servidor mqtt",e)
 
     def operacionTinaco(self,nivelMaxTinaco, nivelMinTinaco):
         
         
         if self.nivelTinaco >= nivelMaxTinaco and self.bombaActivada:
-            print("Apagar bomba")
             self.clienteMqtt.publish("Bomba","0")
             
-
         elif self.nivelTinaco <= nivelMinTinaco and not self.bombaActivada and self.tamboListo:
-            print("Prender Bomba")
             self.clienteMqtt.publish("Bomba","1")
 
         elif self.bombaActivada and not self.tamboListo:
-            print("Apagar bomba")
             self.clienteMqtt.publish("Bomba","0")
             
-
         elif self.tamboListo and nivelMinTinaco < self.nivelTinaco < nivelMaxTinaco:
-            print("Prender Bomba")
             self.clienteMqtt.publish("Bomba","1")
         
         elif nivelMinTinaco < self.nivelTinaco < nivelMaxTinaco and not self.tamboListo and not self.bombaActivada:
-            self.clienteMqtt.publish("status","[INFO] Nivel del tinaco al {:.2f} %".format(self.porciento_llenado("tinaco")))
             tm.sleep(1)
             
 
@@ -152,52 +140,45 @@ class status:
     def operacionTambo(self,nivelMaxTambo,nivelMinTambo):
         
         if self.nivelTambo >= nivelMaxTambo:
-            print("Tambo listo para subir agua")
-            self.clienteMqtt.publish("status","[INFO] TAMBO listo para subir agua")
+            self.clienteMqtt.publish("mensajes_tambo","+---\tLISTO PARA SUBIR AGUA\t---+")
+            self.notificacion_actual = "LISTO PARA SUBIR AGUA"
             self.tamboListo = True
         elif self.nivelTambo <= nivelMinTambo :
-            print("Tambo necesita agua")
             self.tamboListo = False
-            self.clienteMqtt.publish("status","[INFO] TAMBO NECESITA AGUA.")
-            self.clienteMqtt.publish("status","[INFO] Nivel del tambo al {:2f} %".format(self.porciento_llenado("tambo")))
+            self.clienteMqtt.publish("mensajes_tambo","+---\tSE NECESITA AGUA PARA SUBIR.\t---+")
+            self.notificacion_actual = "TAMBO SIN AGUA"
             tm.sleep(1)
         elif self.nivelTambo <= nivelMaxTambo and not self.bombaActivada:
-            print("Tambo necesita agua")
-            self.clienteMqtt.publish("status","[INFO] EL TAMBO NO ESTÁ LLENO.")
-            self.clienteMqtt.publish("status","[INFO] Nivel del tambo al {:.2f} %".format(self.porciento_llenado("tambo")))
+            self.clienteMqtt.publish("mensajes_tambo","+---\tTAMBO NECESITA AGUA\t---+")
+            self.notificacion_actual = "TAMBO PARCIALMENTE LLENO."
             tm.sleep(1) 
         elif self.nivelTambo <= nivelMaxTambo and self.bombaActivada:
-            print("Llenando, bomba activada...")
-            self.clienteMqtt.publish("status","[INFO] Llenando, bomba activada...")
-            self.clienteMqtt.publish("status","[INFO] Nivel del tambo al {:.2} %".format(self.porciento_llenado("tambo")))
+            self.clienteMqtt.publish("mensajes_bomba","+---\tSUBIENDO AGUA\t---+")
+            self.notificacion_actual = "SUBIENDO AGUA"
             tm.sleep(1)
             
             
             
     def operacionSemiAutomatica(self,nivelMaxTambo,nivelMinTambo):
-        print("Nivel del tambo:",self.nivelTambo)
         if self.nivelTambo >= nivelMaxTambo:
-            print("Tambo listo para subir agua")
-            self.clienteMqtt.publish("status","[INFO] TAMBO listo para subir agua")
+            self.publicar("+---\tLISTO PARA SUBIR AGUA. CERRAR  DEL TAMBO\t---+","mensajes_tambo")
+            self.notificacion_actual = "CERRAR LA LLAVE DEL AGUA DEL TAMBO, ESTA LLENO"
             self.tamboListo = True
             tm.sleep(1)
         elif self.nivelTambo <= nivelMinTambo:
-            print("Tambo necesita agua")
             self.tamboListo = False
-            self.clienteMqtt.publish("status","[INFO] TAMBO NECESITA AGUA.")
-            print("Apagar bomba")
+            self.publicar("+---\tNIVEL DE AGUA MUY BAJO\t---+","mensajes_tambo")
+            self.notificacion_actual = "TAMBO SIN AGUA" 
             self.clienteMqtt.publish("Bomba","0")
             tm.sleep(1)
-        elif self.nivelTinaco <= nivelMaxTambo and not self.bombaActivada:
-            print("Tambo necesita agua")
-            self.clienteMqtt.publish("status","[INFO] EL TAMBO NO ESTÁ LLENO.")
-            self.clienteMqtt.publish("status","[INFO] Nivel del tambo al {:.2f} %".format(self.porciento_llenado("tambo")))
+        elif self.nivelTambo <= nivelMaxTambo and not self.bombaActivada:
+            self.publicar("+---\tTAMBO PUEDE SUBIR AGUA\t---+","mensajes_tambo")
+            self.notificacion_actual = "PUEDE SUBIR AGUA DEL TAMBO"
+            #self.clienteMqtt.publish("status","[INFO] Nivel del tambo al {:.2f} %".format(self.porciento_llenado("tambo")))
             tm.sleep(1)
         elif self.nivelTambo <= nivelMaxTambo and self.bombaActivada:
-            print("Llenando, bomba activada...")
-            self.clienteMqtt.publish("status","[INFO] Llenando, bomba activada...")
-            self.clienteMqtt.publish("status","[INFO] MODO SEMIAUTOMATICO")
-            self.clienteMqtt.publish("status","[INFO] Nivel del tambo al {:.2f} %".format(self.porciento_llenado("tambo")))
+            self.clienteMqtt.publish("status","+---LLENANDO TINACO, BOMBA ACTIVADA\t---+")
+            self.notificacion_actual = "SUBIENDO AGUA"
             tm.sleep(0.5)
 
     def porciento_llenado(self,componente):
@@ -207,66 +188,106 @@ class status:
             return (self.nivelTinaco * 100)/nivelMaxTinaco
     
     def publishStatus(self):
-        self.clienteMqtt.publish("status","[INFO] Tambo activado:{} Tinaco activado:{}".format(self.tambo,self.tinaco))
-        self.clienteMqtt.publish("status","[INFO] Nivel de agua del tambo:{:.2f}% Nivel del agua del tinaco :{:.2f}%".format(self.porciento_llenado("tambo"),self.porciento_llenado("tinaco")))
-        tm.sleep(5)
+        self.clienteMqtt.publish("nivel_tambo_%","Nivel -> {:2f} %".format(self.porciento_llenado("tambo")))
+        self.clienteMqtt.publish("nivel_tinaco_%","Nivel->{:2f} %".format(self.porciento_llenado("tinaco")))
+        self.clienteMqtt.publish("status","+\tTambo-{}\tTinaco-{}\t{}".format(self.tambo,self.tinaco,self.modo))
+        self.clienteMqtt.publish("status","\t{:.2f} %     \t{:.2f} %".format(self.porciento_llenado("tambo"),self.porciento_llenado("tinaco")))
+    def publicar(self, mensaje,topic="status"):
+        #mensaje = mensaje.upper()
+        #mensaje = "+---\t"+mensaje+"\t---+"
+        self.clienteMqtt.publish(topic,mensaje)
 
-stats = status()
-
-def main():
-    stats.set_mqtt_client()
-    stats.tinaco = ping(stats.ipTinaco)
-    stats.tambo = ping(stats.ipTambo)
-    stats.clienteMqtt.loop_start()
-    while True:
-
-        #print("Modo:",stats.modo)
-        if stats.modo == "automatico":
-            
-            if stats.ipTambo != "":
-                stats.operacionTambo(nivelMaxTambo,nivelMinTambo)
-            if stats.ipTinaco != "":
-                stats.operacionTinaco(nivelMaxTinaco,nivelMinTinaco)
-            
-            if stats.tambo!=True or stats.tinaco!=True:
-                print("[INFO] Se mantiene bomba apagada")
-                print("[INFO] Tambo activado:",stats.tambo,"Tinaco activado:",stats.tinaco)
-                stats.bombaActivada = False
-            if stats.bombaActivada:
-                stats.tinaco = ping(stats.ipTinaco)
-                stats.tambo = ping(stats.ipTambo)
-
-        elif stats.modo == "semiautomatico":
-
-            print("[INFO] El sistema está en modo semiautomatico. Tome sus precauciones. Checar constantemente el nivel de agua.")
-
-            stats.operacionSemiAutomatica(nivelMaxTambo,nivelMinTambo)
-            
-
-            if stats.tambo!=True:
-                print("[INFO] Se mantiene bomba apagada")
-                print("[INFO] Tambo activado:",stats.tambo,"Tinaco activado:",stats.tambo)
-                stats.bombaActivada = False
-            
-            if stats.bombaActivada:
-                stats.tambo = ping(stats.ipTambo)
-
-
-        elif stats.modo == "manual" :
-
-            print("[INFO] El sistema está en modo manual. Tome sus precauciones. Checar constantemente el nivel de agua.")
-            stats.clienteMqtt.publish("status","[INFO] El sistema está en modo manual. Tome sus precauciones. Checar constantemente el nivel de agua.")
-            if stats.tambo==True:
-                stats.clienteMqtt.publish("status","[INFO] Porcentaje de llenado del Tambo:{:.2f}%".format(stats.porciento_llenado("tambo")))
-
-            if  stats.tinaco==True:
-                stats.clienteMqtt.publish("status","[INFO] Porcentaje de llenado del tinaco:{:.2f}%".format(stats.porciento_llenado("tinaco")))
-            stats.tinaco = ping(stats.ipTinaco)
-            stats.tambo = ping(stats.ipTambo)
-            
-            tm.sleep(1)            
+    def publicar_notificacion_front(self):
+        tambo = "Activado" if self.tambo else "Desactivado"
+        tinaco = "Activado" if self.tinaco else "Desactivado"
+        modo = self.modo
+        bomba = "Activada" if self.bombaActivada else "Desactivada"
+        mensaje = self.notificacion_actual
+        notificacion ="{}-{}-{}-{}-{}".format(tambo,tinaco,bomba,modo,mensaje)
+        self.publicar(notificacion,"notificaciones")
 
         
 
+
+def obtener_status_sensores(stats,logger):
+    try:
+        while True:
+            stats.tinaco = ping(stats.ipTinaco)
+            stats.tambo = ping(stats.ipTambo)
+            tm.sleep(1)
+    except Exception as e:
+        logger.warning("No se pudo obtener ips {}".format(e))
+def ejecutar_centinela(stats,logger):
+    while True:
+        try:
+            stats.publishStatus()
+            stats.publicar_notificacion_front()
+            if stats.modo == "automatico":
+                if stats.tambo:
+                    stats.operacionTambo(nivelMaxTambo,nivelMinTambo)
+                else:
+                    stats.bombaActivada = False
+                    stats.publicar("Sin funcionar","mensajes_tambo")
+                if stats.tinaco:
+                    stats.operacionTinaco(nivelMaxTinaco,nivelMinTinaco)
+                else:
+                    stats.bombaActivada = False
+                    stats.publicar("Sin funcionar","mensajes_tinaco")
+                tm.sleep(1)
+
+            elif stats.modo == "semiautomatico":
+                stats.operacionSemiAutomatica(nivelMaxTambo,nivelMinTambo)
+               
+                if not stats.tambo:
+                    stats.bombaActivada = False
+                    stats.publicar("Sin funcionar","mensajes_tambo")
+                if not stats.tinaco:
+                    stats.publicar("Sin funcionar","mensajes_tinaco")
+                tm.sleep(1)
+            elif stats.modo == "manual" :
+                if not stats.tambo:
+                    stats.publicar("Sin funcionar","mensajes_tambo")
+                if not stats.tinaco:
+                    stats.publicar("Sin funcionar","mensajes_tinaco")
+                stats.notificacion_actual="REVISAR LOS NIVELES DE AGUA CONSTANTEMENTE"
+                
+                tm.sleep(1)
+        except Exception as e:
+            logger.error("Error al ejecutar centinela {}".format(e))
+            sys.exit(1)
+
+def main(logger):
+    
+    stats.set_mqtt_client()
+    try:
+        stats.tinaco = ping(stats.ipTinaco)
+        stats.tambo = ping(stats.ipTambo)
+    except Exception as errorIp:
+        logger.warning("No se pudo obtener ips de sensores")
+    try:
+        stats.clienteMqtt.loop_start()
+    except Exception as e:
+        logger.critical("Error al inicial loop mqtt")
+        sys.exit(0)
+    Tarea1 = Thread(target=ejecutar_centinela,args=(stats,logger))
+    Tarea2 = Thread(target=obtener_status_sensores,args=(stats,logger))
+    Tarea1.start()
+    Tarea2.start()
+
+
 if __name__=='__main__':
-    main()
+    # create logger
+    
+    # Create and configure logger
+    logging.basicConfig(filename="centinela.log",
+                        format='%(asctime)s - %(levelname)s - %(message)s',
+                        filemode='w')
+    
+    # Creating an object
+    logger = logging.getLogger()
+    
+    # Setting the threshold of logger to DEBUG
+    logger.setLevel(logging.DEBUG)
+
+    stats = ControladorBomba(logger)
+    main(logger)
