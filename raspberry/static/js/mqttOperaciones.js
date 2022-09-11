@@ -1,127 +1,130 @@
-class status {
-    constructor() {
-        this.status = "";
-    }
-}
-var mqtt;
-var reconnectTimeout = 2000;
-var host = "192.168.0.6"; //change this
+let mqtt;
+const port = 9001;
+const host = '192.168.0.12';
+const reconnectTimeout = 2000;
 const nivelMaxTambo = 86 - 19;
 const nivelMaxTinaco = 84.5 - 20;
 
-//var host="steve-laptop"; //change this
-
-//var port=8080
-var port = 9001;
-//var port=8881;
-var mensaje;
-
-
-stats = new status();
 function onConnect() {
-    // Once a connection has been made, make a subscription and send a message.
-
-    console.log("Connected ");
-    mqtt.subscribe("Nivel_agua/tambo");
-    mqtt.subscribe("Nivel_agua/tinaco");
-    message = new Paho.MQTT.Message("Servidor web");
-    message.destinationName = "status";
-    mqtt.send(message);
+  // Once a connection has been made, make a subscription and send a message.
+  mqtt.subscribe('Nivel_agua/tambo');
+  mqtt.subscribe('Nivel_agua/tinaco');
+  mqtt.subscribe('notificaciones');
+  message = new Paho.MQTT.Message('Servidor web');
+  message.destinationName = 'status';
+  mqtt.send(message);
 }
 function onFailure(message) {
-    console.log("Conexión al host" + host + " falló");
-    setTimeout(MQTT.connect, reconnectTimeout);
+  console.log('Conexión al host' + host + ' falló');
+  setTimeout(MQTT.connect, reconnectTimeout);
 }
 function calcularPorcentajeNivel(nivel, componente) {
-    if (componente == "tambo") {
-        return (nivel * 100) / nivelMaxTambo;
-    }
-    else if (componente == "tinaco") {
-        return (nivel * 100) / nivelMaxTinaco;
-    }
+  if (componente == 'tambo') {
+    return (nivel * 100) / nivelMaxTambo;
+  } else if (componente == 'tinaco') {
+    return (nivel * 100) / nivelMaxTinaco;
+  }
 }
 function onMessageArrived(msg) {
-    if (msg.destinationName.split("/")[0] == "Nivel_agua") {
-        inmsg = msg.payloadString;
-        nivel = parseFloat(inmsg);
+  let inmsg, topic, place;
+  [topic, place] = msg.destinationName.split('/');
+  if (topic == 'Nivel_agua') {
+    inmsg = msg.payloadString;
+    nivel = parseFloat(inmsg);
 
-        if (msg.destinationName.split("/")[1] == "tambo") {
-            nivel = calcularPorcentajeNivel(nivel, "tambo").toFixed(1);
-            document.getElementById("nivel_tambo").innerHTML = nivel.toString() + "%";
-
-        }
-        else if (msg.destinationName.split("/")[1] == "tinaco") {
-            nivel = calcularPorcentajeNivel(nivel, "tinaco").toFixed(1);
-            document.getElementById("nivel_tinaco").innerHTML = nivel.toString() + "%";
-            //console.log(inmsg);
-        }
-
+    if (place == 'tambo') {
+      nivel = calcularPorcentajeNivel(nivel, 'tambo').toFixed(1);
+      dispatch('niveles', { tambo: nivel });
+    } else if (place == 'tinaco') {
+      nivel = calcularPorcentajeNivel(nivel, 'tinaco').toFixed(1);
+      dispatch('niveles', { tinaco: nivel });
     }
-
-
-
-
+  } else if (topic === 'notificaciones') {
+    inmsg = msg.payloadString;
+    dispatch('notificacion', JSON.parse(inmsg));
+  }
 }
+
+function MQTTconnect() {
+  console.log('connecting to ' + host + ' ' + port);
+  const x = Math.floor(Math.random() * 10000);
+  const cname = 'orderform-' + x;
+  mqtt = new Paho.MQTT.Client(host, port, cname);
+  const options = {
+    timeout: 3,
+    onSuccess: onConnect,
+    onFailure: onFailure,
+  };
+  mqtt.onMessageArrived = onMessageArrived;
+
+  mqtt.connect(options); //connect
+}
+
+// Action functions //
+
 function encenderBomba() {
-    message = new Paho.MQTT.Message("1");
-    message.destinationName = "Bomba";
-    mqtt.send(message);
+  message = new Paho.MQTT.Message('1');
+  message.destinationName = 'Bomba';
+  mqtt.send(message);
 }
 
 function apagarBomba() {
-    message = new Paho.MQTT.Message("0");
-    message.destinationName = "Bomba";
+  message = new Paho.MQTT.Message('0');
+  message.destinationName = 'Bomba';
+  mqtt.send(message);
+}
+function modoAutomatico() {
+  message = new Paho.MQTT.Message('automatico');
+  message.destinationName = 'modo';
+  const modoauto = document.getElementById('automatico');
+  if (modoauto.checked) {
+    document.getElementById('encenderApagarBomba').checked = false;
     mqtt.send(message);
+  }
 }
-function modo_automatico() {
-    message = new Paho.MQTT.Message("automatico");
-    message.destinationName = "modo";
-    var modoauto = document.getElementById("automatico");
-    if (modoauto.checked) {
-        document.getElementById("encenderBomba").disabled = true;
-        document.getElementById("apagarBomba").disabled = true;
-        document.getElementById("encenderBomba").checked = false;
-        document.getElementById("apagarBomba").checked = false;
-        mqtt.send(message);
-    }
+function modoSemiautomatico() {
+  message = new Paho.MQTT.Message('semiautomatico');
+  message.destinationName = 'modo';
+  const modosemi = document.getElementById('semi');
+  if (modosemi.checked) mqtt.send(message);
 }
-function modo_semiautomatico() {
-    message = new Paho.MQTT.Message("semiautomatico");
-    message.destinationName = "modo";
-    var modosemi = document.getElementById("semi");
-    if (modosemi.checked) {
-        document.getElementById("encenderBomba").disabled = false;
-        document.getElementById("apagarBomba").disabled = false;
-        mqtt.send(message);
-    }
-}
-function modo_manual() {
-    message = new Paho.MQTT.Message("manual");
-    message.destinationName = "modo";
-    var modomanual = document.getElementById("manual");
-    if (modomanual.checked) {
-        document.getElementById("encenderBomba").disabled = false;
-        document.getElementById("apagarBomba").disabled = false;
-        mqtt.send(message);
-    }
+function modoManual() {
+  message = new Paho.MQTT.Message('manual');
+  message.destinationName = 'modo';
+  const modomanual = document.getElementById('manual');
+  if (modomanual.checked) mqtt.send(message);
 }
 
+MQTTconnect();
 
-function MQTTconnect() {
-    console.log("connecting to " + host + " " + port);
-    var x = Math.floor(Math.random() * 10000);
-    var cname = "orderform-" + x;
-    mqtt = new Paho.MQTT.Client(host, port, cname);
-    //document.write("connecting to "+ host);
-    var options = {
+window.addEventListener('mqttEvent', ({ detail } = e) => {
+  switch (detail.type) {
+    case 'encender':
+      encenderBomba();
+      break;
+    case 'apagar':
+      apagarBomba();
+      break;
+    case 'automatico':
+      modoAutomatico();
+      break;
+    case 'semiautomatico':
+      modoSemiautomatico();
+      break;
+    case 'manual':
+      modoManual();
+      break;
+    default:
+      console.log('No ocurrió nada');
+      break;
+  }
+});
 
-        timeout: 3,
-        onSuccess: onConnect,
-        onFailure: onFailure,
-
-
-    };
-    mqtt.onMessageArrived = onMessageArrived;
-
-    mqtt.connect(options); //connect
+function dispatch(name, detail) {
+  const mqttEvent = new CustomEvent(name, {
+    detail,
+    bubbles: true,
+    composed: true,
+  });
+  window.dispatchEvent(mqttEvent);
 }
