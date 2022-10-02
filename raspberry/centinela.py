@@ -192,7 +192,7 @@ class ControladorBomba:
         self.clienteMqtt.publish("nivel_tinaco_%","Nivel->{:2f} %".format(self.porciento_llenado("tinaco")))
         self.clienteMqtt.publish("status","+\tTambo-{}\tTinaco-{}\t{}".format(self.tambo,self.tinaco,self.modo))
         self.clienteMqtt.publish("status","\t{:.2f} %     \t{:.2f} %".format(self.porciento_llenado("tambo"),self.porciento_llenado("tinaco")))
-    def publicar(self,topic="status",mensaje=mensaje):
+    def publicar(self,topic="status",mensaje):
         #mensaje = mensaje.upper()
         #mensaje = "+---\t"+mensaje+"\t---+"
         self.clienteMqtt.publish(topic,mensaje)
