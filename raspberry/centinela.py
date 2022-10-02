@@ -204,7 +204,7 @@ class ControladorBomba:
         bomba = "Activada" if self.bombaActivada else "Desactivada"
         mensaje = self.notificacion_actual
         notificacion ="{}-{}-{}-{}-{}".format(tambo,tinaco,bomba,modo,mensaje)
-        self.publicar(notificacion,"notificaciones")
+        self.publicar("notificaciones",notificacion)
 
         
 
