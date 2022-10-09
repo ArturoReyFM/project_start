@@ -278,7 +278,7 @@ def main(logger):
     except Exception as e:
         logger.critical("Error al inicial loop mqtt")
         sys.exit(0)
-    Tarea1 = Thread(target=ejecutar_centinela,args=(stats,logger,daemon=True))
+    Tarea1 = Thread(target=ejecutar_centinela,args=(stats,logger),daemon=True)
     Tarea2 = Thread(target=obtener_status_sensores,args=(stats,logger),daemon=True)
     Tarea1.start()
     Tarea2.start()
