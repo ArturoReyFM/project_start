@@ -5,6 +5,7 @@ import subprocess  # For executing a shell command
 from threading import Thread
 import logging
 import sys
+import json
 
 alturaMaximaTambo = 86 # Altura máxima desde la base del tambo al sensor
 alturaMaximaTinaco = 84.5 # Altura màxima desde la base del tinaco al sensor
@@ -203,7 +204,15 @@ class ControladorBomba:
         modo = self.modo
         bomba = "Activada" if self.bombaActivada else "Desactivada"
         mensaje = self.notificacion_actual
-        notificacion ="{}-{}-{}-{}-{}".format(tambo,tinaco,bomba,modo,mensaje)
+        notificacion={
+            "tambo":tambo,
+            "tinaco":tinaco,
+            "bomba":bomba,
+            "modo":modo,
+            "mensaje":mensaje
+        }
+        notificacion = json.dumps(notificacion)
+        #notificacion ="{}-{}-{}-{}-{}".format(tambo,tinaco,bomba,modo,mensaje)
         self.publicar(topic="notificaciones",mensaje=notificacion)
 
         
