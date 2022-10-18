@@ -329,7 +329,7 @@ svg {
 }
 
 .btn-color-mode-switch > label.btn-color-mode-switch-inner:after {
-  content: url(../../templates/icons/off_power.svg);
+  content: url('/static/images/off_power.svg');
   width: 2.2rem;
   height: 1.5rem;
   background: linear-gradient(92.41deg, #f2f8fe 0%, #cee1f8 100%);
@@ -350,7 +350,7 @@ svg {
   + label.btn-color-mode-switch-inner:after {
   width: 2.2rem;
   left: 2.8rem;
-  content: url(../../templates/icons/on_power.svg);
+  content: url('/static/images/on_power.svg');
 }
 .btn-color-mode-switch
   input[type='checkbox']:checked
@@ -371,7 +371,7 @@ svg {
   border: 1px solid #464646;
   width: 2.2rem;
   left: 1.4rem;
-  content: url(../../templates/icons/disabled_power.svg);
+  content: url('/static/images/disabled_power.svg');
 }
 
 .btn-color-mode-switch input[type='checkbox'] {
