@@ -29,7 +29,7 @@ if __name__ == '__main__':
     #client.username_pw_set(username, password)
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect('localhost')
+    client.connect('192.168.0.12')
     client.loop_start()
 
     app.run(host='0.0.0.0', port=port)

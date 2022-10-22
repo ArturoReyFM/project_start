@@ -82,172 +82,308 @@ time,
 mark,
 audio,
 video {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 100%;
-    font: inherit;
-    vertical-align: baseline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+* {
+  box-sizing: border-box;
+  transition: all 800ms ease;
 }
 
 .invisible {
-    display: none;
+  visibility: hidden;
+  position: absolute;
 }
 
 body {
-    background: linear-gradient(to right bottom, #3A7BFC 0%, #4BF5AF 100%);
-    background-size: cover;
-    min-height: 100vh;
-    min-width: 100vw;
-    font-family: 'Montserrat', sans-serif;
-    color: rgba(23, 18, 112, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  background: #3a7bfc;
+  height: 100vh;
+  width: 100vw;
+  max-width: 100vw;
+  max-height: 100vh;
+  font-family: 'Montserrat', sans-serif;
+  color: rgba(23, 18, 112, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
-@supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
-    .vidrio {
-        background: linear-gradient(154.42deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.42) 0.01%, rgba(255, 255, 255, 0.12) 100%);
-        mix-blend-mode: normal;
-        -webkit-backdrop-filter: blur(100px);
-        backdrop-filter: blur(100px);
-    }
-}
-
-main {
-    border-radius: 1.5rem;
-    width: 80%;
-    margin-top: clamp(1.5rem, 7vh, 3rem);
-    margin-bottom: clamp(1.5rem, 7vh, 3rem);
-}
-
-h1 {
-    margin: 0.8em auto;
-    font-size: 1.7rem;
-    text-align: center;
-    font-weight: 600;
-}
-
-.grid-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-}
-
-/* Niveles de agua */
-section,
-fieldset {
-    margin: 0.5em 1em;
-}
-
-h2,
-legend {
-    font-weight: 500;
-    margin-bottom: 0.3em;
-    font-size: 1.1rem;
-}
-
-section div {
-    background: linear-gradient(92.41deg, rgba(255, 255, 255, 0.85) 0%, #FFFFFF 100%);
-    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
-    border-radius: 1em;
-    margin: 0.5em 0;
-}
-
-p {
-    display: inline-block;
-    padding: 1em;
+.information {
+  display: inline-block;
+  font-size: 1rem;
 }
 
 svg {
-    width: 2em;
-    float: right;
-    margin: 0.55em 1.5em;
-    fill: rgba(23, 18, 112, 0.8);
+  width: 2em;
+  float: right;
+  fill: rgba(23, 18, 112, 0.8);
+  margin: 0.4em;
 }
 
-/* Modo */
-.flex1 {
-    display: flex;
-    height: 80%;
-    flex-direction: column;
-    justify-content: space-around;
+@supports ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
+  .vidrio {
+    background: linear-gradient(
+      154.42deg,
+      rgba(255, 255, 255, 0.776) 0%,
+      rgba(255, 255, 255, 0.679) 0.01%,
+      rgba(255, 255, 255, 0.194) 100%
+    );
+    mix-blend-mode: normal;
+    -webkit-backdrop-filter: blur(100px);
+    backdrop-filter: blur(100px);
+  }
 }
 
-fieldset:nth-of-type(1) input {
-    /* Style the radios and the checked one*/
+.main {
+  border: 1px solid #ffffff8a;
+  border-radius: 1.5rem;
+  width: 80%;
+  height: 90%;
+  max-width: 80vw;
+  max-height: 90vh;
+  padding: 0.5rem 1.2rem;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
 
-/* Seleccionado */
-/*:has is for CSS4 :( */
-
-
-/* Botones */
-.flex2 {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.title {
+  font-size: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+  margin-top: 1rem;
 }
 
-/* Habilitado */
-fieldset:nth-of-type(2) label {
-    background: linear-gradient(92.41deg, rgba(255, 255, 255, 0.51) 0%, rgba(255, 255, 255, 0.6) 100%);
-    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
-    width: 30%;
-    height: 3em;
-    text-align: center;
-    line-height: 3em;
-    font-weight: 500;
-    font-size: clamp(0.5em, 1.2em, 2em);
+.notification {
+  font-variant: small-caps;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.7rem;
+  margin-bottom: 1rem;
 }
 
-fieldset:nth-of-type(2) label {
-    background: linear-gradient(92.41deg, rgba(255, 255, 255, 0.6) 100%, rgba(255, 255, 255, 0.51) 0%);
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 35% 20%;
 }
 
-label[for="encenderBomba"] {
-    border-radius: 1em 0 0 1em;
+/* Water levels */
+
+.subtitle {
+  font-weight: 500;
+  font-size: 1.1rem;
 }
 
-label[for="apagarBomba"] {
-    border-radius: 0 1em 1em 0;
+.level-info {
+  background: linear-gradient(
+    92.41deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    #ffffff 100%
+  );
+  box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 1em;
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.8rem 0;
+}
+.level-info-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Deshabilitado */
-#encenderBomba:disabled~label {
-    background: linear-gradient(92.41deg, rgba(181, 182, 183, 0.42) 0%, rgba(181, 182, 183, 0.6) 100%);
-    box-shadow: 0px 7px 15px rgba(0, 0, 0, 0.15);
-    color: rgba(84, 79, 86, 0.8);
-    border: none;
+/* Progress bars */
+.progress-container {
+  height: 0.8rem;
+  width: 100%;
+  border-radius: 0.4rem;
+  background: #b5b6b7;
 }
 
-#apagarBomba:disabled~label {
-    background: linear-gradient(92.41deg, rgba(181, 182, 183, 0.6) 100%, rgba(181, 182, 183, 0.42) 0%);
-    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
-    color: rgba(84, 79, 86, 0.8);
-    border: none;
+.progress {
+  position: relative;
+  height: 0.8rem;
+  top: -0.8rem;
+  width: 0;
+  border-radius: 0.4rem;
+  background: linear-gradient(90deg, #3a7bfc 0%, #4bf5af 100%);
+  transition: width 0.4s ease;
 }
 
-/* Hover */
-#encenderBomba:enabled:hover+label,
-#apagarBomba:enabled:hover+label {
-    transition: 40ms transform ease-in-out;
-    transform: scale(1.05);
+/* Mode */
+
+.flex-mode {
+  display: flex;
+  height: 80%;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 0.3rem;
 }
 
-/* Seleccionado */
-/* Figure out a way to select previous siblings and use #apagarBomba:not(:checked) */
-/* Transitions require way more than expected. Check https://codepen.io/chriscoyier/pen/eRbLWP */
-#encenderBomba:checked+label {
-    background: radial-gradient(50% 1188.28% at 50% 50%, rgba(52, 255, 170, 0.6) 0%, rgba(10, 130, 112, 0.6) 100%);
-    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
-    text-shadow: 0 0 15px #dcfaf2;
-
+.radio-buttons {
+  margin-top: 0.8rem;
 }
 
-#apagarBomba:checked+label {
-    background: radial-gradient(50% 1188.28% at 50% 50%, rgba(255, 97, 97, 0.85) 0%, #A4161A 100%);
-    box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
-    color: #470000;
+.radio input[type='radio'] {
+  position: absolute;
+  opacity: 0;
+}
+
+.radio-label {
+  display: inline-block;
+}
+
+.radio {
+  border-radius: 15px;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.3rem;
+  padding-top: 0.7rem;
+  transition: all 500ms ease;
+}
+
+.checked-label:has(label > input[type='radio']:checked) {
+  background: linear-gradient(
+    92.41deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    #ffffff 100%
+  );
+  padding-right: 10px;
+  transition: all 500ms ease;
+  width: fit-content;
+}
+
+.radio input[type='radio'] + .radio-label:before {
+  content: '';
+  background: #f4f4f4;
+  border-radius: 100%;
+  border: 1px solid #171270;
+  display: inline-block;
+  width: 1.4em;
+  height: 1.4em;
+  position: relative;
+  top: -0.2em;
+  margin-right: 1em;
+  vertical-align: top;
+  cursor: pointer;
+  text-align: center;
+  transition: all 250ms ease;
+}
+.radio input[type='radio']:checked + .radio-label:before {
+  background: #3a7bfccc;
+  transform: rotate(-44.33deg);
+  box-shadow: inset 0 0 0 3px #f4f4f4;
+}
+.radio input[type='radio']:focus + .radio-label:before {
+  outline: none;
+}
+.radio input[type='radio'][disabled][checked] + .radio-label:before {
+  box-shadow: inset 0 0 0 4px #f4f4f4;
+  border-color: #b4b4b4;
+  background: #b4b4b4;
+}
+.radio input[type='radio'][disabled] + .radio-label:before {
+  box-shadow: inset 0 0 0 15px #f4f4f4;
+  border-color: #b4b4b4;
+  background: #b4b4b4;
+}
+.radio input[type='radio'] + .radio-label:empty:before {
+  margin-right: 0;
+}
+
+/* Encender/Apagar */
+
+.encender-apagar {
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-color-mode-switch {
+  display: inline-block;
+  position: relative;
+}
+
+.btn-color-mode-switch > label.btn-color-mode-switch-inner {
+  margin: 0 auto;
+  margin-bottom: 0.5rem;
+  width: 5.5rem;
+  height: 2.8rem;
+  border-radius: 2rem;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+  display: block;
+  background-color: #f8c1d7;
+  border: 1px solid #ffffff;
+  box-shadow: 5px 7px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-color-mode-switch > label.btn-color-mode-switch-inner:after {
+  content: url('/static/images/off_power.svg');
+  width: 2.2rem;
+  height: 1.5rem;
+  background: linear-gradient(92.41deg, #f2f8fe 0%, #cee1f8 100%);
+  border: 1px solid #ffffff;
+  border-radius: 2rem;
+  position: absolute;
+  left: 0.25rem;
+  top: 3px;
+  text-align: center;
+  line-height: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0px 0px 6px -2px #111;
+  padding: 5px 0px;
+}
+
+.btn-color-mode-switch
+  input[type='checkbox']:checked
+  + label.btn-color-mode-switch-inner:after {
+  width: 2.2rem;
+  left: 2.8rem;
+  content: url('/static/images/on_power.svg');
+}
+.btn-color-mode-switch
+  input[type='checkbox']:checked
+  + label.btn-color-mode-switch-inner {
+  background-color: #8ddfb0;
+}
+
+.btn-color-mode-switch
+  input[type='checkbox']:disabled
+  + label.btn-color-mode-switch-inner {
+  background-color: #9e9e9e;
+  border: none;
+}
+.btn-color-mode-switch
+  input[type='checkbox']:disabled
+  + label.btn-color-mode-switch-inner:after {
+  background: #9e9e9e;
+  border: 1px solid #464646;
+  width: 2.2rem;
+  left: 1.4rem;
+  content: url('/static/images/disabled_power.svg');
+}
+
+.btn-color-mode-switch input[type='checkbox'] {
+  cursor: pointer;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  position: absolute;
+}
+
+.on-off-label {
+  text-align: center;
+  margin: auto;
+  display: block;
 }
