@@ -24,7 +24,7 @@
 
     <main class="vidrio main" v-scope @vue:mounted="addListeners()">
       <h1 class="title">Bomba de agua</h1>
-      <p class="notification">{{notificacion}}</p>
+      <p class="notification"> {% raw %} {{notificacion}} {% endraw %} </p>
       <div class="grid-container">
         <section class="section">
           <h2 class="subtitle">Niveles de agua</h2>
